@@ -10,10 +10,11 @@ import android.support.v7.app.AppCompatActivity;
  */
 
 public class CrashBaseActivity extends AppCompatActivity {
+
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         ActivityUtil.add(this);
-        super.onCreate(savedInstanceState, persistentState);
     }
 
     @Override
