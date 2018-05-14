@@ -275,7 +275,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
                    if (stackTrace!=null){
                        for (StackTraceElement element : stackTrace){
                            builder.append("at ");
-                           builder.append(element.getClassName());
+                           builder.append(element.getClassName()+".");
                            builder.append(element.getMethodName());
                            builder.append("(");
                            builder.append(element.getFileName());
