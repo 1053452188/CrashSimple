@@ -56,7 +56,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 
     // 用于格式化日期,作为日志文件名的一部分
 //    @SuppressLint("SimpleDateFormat")
-    private DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
+    private static DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
 
     //是否是Debug模式
     private boolean mIsDebug;
@@ -184,6 +184,33 @@ public class CrashHandler implements UncaughtExceptionHandler {
             // 保存日志文件
             saveCrashInfo2File(ex);
         }
+
+        if (onCrashCallBack!=null){
+            Crash crash = new Crash();
+            crash.setCreateTime(formatter.format(new Date()));
+            try{
+                PackageManager pm = mContext.getPackageManager();
+                PackageInfo pi = pm.getPackageInfo(mContext.getPackageName(),
+                        PackageManager.GET_ACTIVITIES);
+
+                if (pi != null) {
+                    String versionName = pi.versionName == null ? "null"
+                            : pi.versionName;
+                    int versionCode = pi.versionCode;
+//                    infos.put("versionName", versionName);
+//                    infos.put("versionCode", versionCode);
+                    crash.setVersionName(versionName);
+                    crash.setVersionCode(versionCode);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            crash.setDeviceSerial(Build.SERIAL);
+            crash.setTitle(ex.getMessage());
+            crash.setContent(throwable2Log(ex,false));
+            onCrashCallBack.onCrash(crash);
+        }
+
         return true;
     }
 
@@ -264,29 +291,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
                FileWriter fileWriter = null;
                try {
                    fileWriter = new FileWriter(logFile,true);
-                   StackTraceElement[] stackTrace = throwable.getStackTrace();
-                   StringBuilder builder = new StringBuilder();
-                   builder.append("\r\n");
-                   builder.append("\r\n");
-                   builder.append("本次崩溃日志:"+formatter.format(new Date()));
-                   builder.append("\r\n");
-                   builder.append(throwable.getClass().getName()+":"+throwable.getMessage());
-                   builder.append("\r\n");
-                   if (stackTrace!=null){
-                       for (StackTraceElement element : stackTrace){
-                           builder.append("at ");
-                           builder.append(element.getClassName()+".");
-                           builder.append(element.getMethodName());
-                           builder.append("(");
-                           builder.append(element.getFileName());
-                           builder.append(":");
-                           builder.append(element.getLineNumber());
-                           builder.append(")");
-                           builder.append("\r\n");
-                       }
-                   }
-                   Log.d(TAG,builder.toString());
-                   fileWriter.write(builder.toString());
+                   fileWriter.write(throwable2Log(throwable,true));
                    fileWriter.flush();
                } catch (IOException e) {
                    e.printStackTrace();
@@ -301,8 +306,70 @@ public class CrashHandler implements UncaughtExceptionHandler {
                    }
                }
            }
-
-
        }
+    }
+
+    /**
+     * 生成log
+     * @param throwable
+     * @return
+     */
+    public static String throwable2Log(Throwable throwable,boolean localLog){
+        StackTraceElement[] stackTrace = throwable.getStackTrace();
+        StringBuilder builder = new StringBuilder();
+        if (localLog){
+            builder.append("\r\n");
+            builder.append("\r\n");
+            builder.append("本次崩溃日志:"+formatter.format(new Date()));
+            builder.append("\r\n");
+            builder.append(throwable.getClass().getName()+":"+throwable.getMessage());
+            builder.append("\r\n");
+            if (stackTrace!=null){
+                for (StackTraceElement element : stackTrace){
+                    builder.append("at ");
+                    builder.append(element.getClassName()+".");
+                    builder.append(element.getMethodName());
+                    builder.append("(");
+                    builder.append(element.getFileName());
+                    builder.append(":");
+                    builder.append(element.getLineNumber());
+                    builder.append(")");
+                    builder.append("\r\n");
+                }
+            }
+        }else{
+            builder.append("crash_time :"+formatter.format(new Date()));
+            builder.append("\r\n");
+            builder.append(throwable.getClass().getName()+":"+throwable.getMessage());
+            builder.append("\r\n");
+            if (stackTrace!=null){
+                for (StackTraceElement element : stackTrace){
+                    builder.append("at ");
+                    builder.append(element.getClassName()+".");
+                    builder.append(element.getMethodName());
+                    builder.append("(");
+                    builder.append(element.getFileName());
+                    builder.append(":");
+                    builder.append(element.getLineNumber());
+                    builder.append(")");
+                    builder.append("\r\n");
+                }
+            }
+        }
+        return builder.toString();
+    }
+
+
+    public interface  OnCrashCallBack{
+        void onCrash(Crash crash);
+    }
+    private OnCrashCallBack onCrashCallBack;
+
+    public OnCrashCallBack getOnCrashCallBack() {
+        return onCrashCallBack;
+    }
+
+    public void setOnCrashCallBack(OnCrashCallBack onCrashCallBack) {
+        this.onCrashCallBack = onCrashCallBack;
     }
 }
