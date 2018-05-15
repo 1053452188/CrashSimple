@@ -2,6 +2,7 @@ package com.ayit.crashlibrary;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -23,12 +24,15 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 /**
  * 异常处理类
@@ -152,6 +156,18 @@ public class CrashHandler implements UncaughtExceptionHandler {
             }
             // 结束应用
             ActivityUtil.removeAll();
+            killApp();
+        }
+    }
+
+    public void killApp(){
+        Method method = null;
+        ActivityManager manager = (ActivityManager) mContext.getSystemService(ACTIVITY_SERVICE);
+        try {
+            method = Class.forName("android.app.ActivityManager").getMethod("forceStopPackage", String.class);
+            method.invoke(manager, mContext.getPackageName());
+        } catch (Exception e) {
+            Log.d("force",e.getMessage());
         }
     }
 
@@ -165,6 +181,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
         if (ex == null) {
             return false;
         }
+        Log.e("app_crash",throwable2Log(ex,true));
 
         // 使用 Toast 来显示异常信息
         new Thread() {
