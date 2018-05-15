@@ -9,19 +9,19 @@ import com.ayit.crashlibrary.CrashBaseActivity;
 
 public class MainActivity extends CrashBaseActivity {
 
-    public static final String TAG = "MainActivity";
+    public static final String TAG = "CrashHandler";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d(TAG,"onCreate");
+        Log.d(TAG,"MainActivity onCreate");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG,"onDestroy");
+        Log.d(TAG,"MainActivity onDestroy");
     }
 
     public void mainThread(View view){

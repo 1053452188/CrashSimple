@@ -1,27 +1,23 @@
-package com.ayit.crashsimple;
+package com.ayit.crashlibrary;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.util.Log;
 
-import com.ayit.crashlibrary.CrashBaseService;
-
-public class CrashService extends CrashBaseService {
-    private final String TAG = "CrashHandler";
-    public CrashService() {
+public class CrashBaseService extends Service {
+    public CrashBaseService() {
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG,"CrashService onCreate");
+        ContextWrapperUtil.add(this);
     }
 
     @Override
     public void onDestroy() {
+        ContextWrapperUtil.remove(this);
         super.onDestroy();
-        Log.d(TAG,"CrashService onDestroy");
     }
 
     @Override

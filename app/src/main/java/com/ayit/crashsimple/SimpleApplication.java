@@ -21,7 +21,13 @@ public class SimpleApplication extends Application {
 
         startService(new Intent(this,CrashService.class));
 
-        CrashHandler.getInstance().init(this,true,false,1000,MainActivity.class, Environment.getExternalStorageDirectory().getAbsolutePath()+"/crash.log");
+        //重启
+//        CrashHandler.getInstance().initRestart(this,true,1000,MainActivity.class);
+        //不重启
+//        CrashHandler.getInstance().initKillApp(this,true);
+        //无感知crash
+        CrashHandler.getInstance().initUnCrash(this,true);
+
 
         CrashHandler.getInstance().setOnCrashCallBack(new CrashHandler.OnCrashCallBack() {
             @Override
