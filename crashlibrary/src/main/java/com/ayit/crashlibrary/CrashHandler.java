@@ -18,6 +18,9 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
@@ -160,7 +163,8 @@ public class CrashHandler implements UncaughtExceptionHandler {
      */
     @SuppressWarnings("WrongConstant")
     @Override
-    public void uncaughtException(final Thread thread, final Throwable ex) {
+    public void uncaughtException(final Thread thread,  Throwable ex) {
+
         Log.e("app_crash", throwable2Log(ex, true));
 
         if (!mIsUnCrash){
@@ -343,46 +347,29 @@ public class CrashHandler implements UncaughtExceptionHandler {
      * @return
      */
     public static String throwable2Log(Throwable throwable, boolean localLog) {
-        StackTraceElement[] stackTrace = throwable.getStackTrace();
+        Writer writer = new StringWriter ( );
+        PrintWriter printWriter = new PrintWriter ( writer );
+        throwable.printStackTrace ( printWriter );
+        //异常原因写入stringBuilder
+        Throwable cause = throwable.getCause ( );
+        if ( cause != null ) {
+            cause.printStackTrace ( printWriter );
+        }
+        printWriter.close ( );
+        String crashLog = writer.toString ( );
         StringBuilder builder = new StringBuilder();
+
+
         if (localLog) {
             builder.append("\r\n");
             builder.append("\r\n");
             builder.append("本次崩溃日志:" + formatter.format(new Date()));
             builder.append("\r\n");
-            builder.append(throwable.getClass().getName() + ":" + throwable.getMessage());
-            builder.append("\r\n");
-            if (stackTrace != null) {
-                for (StackTraceElement element : stackTrace) {
-                    builder.append("at ");
-                    builder.append(element.getClassName() + ".");
-                    builder.append(element.getMethodName());
-                    builder.append("(");
-                    builder.append(element.getFileName());
-                    builder.append(":");
-                    builder.append(element.getLineNumber());
-                    builder.append(")");
-                    builder.append("\r\n");
-                }
-            }
+            builder.append(crashLog);
         } else {
             builder.append("crash_time :" + formatter.format(new Date()));
             builder.append("\r\n");
-            builder.append(throwable.getClass().getName() + ":" + throwable.getMessage());
-            builder.append("\r\n");
-            if (stackTrace != null) {
-                for (StackTraceElement element : stackTrace) {
-                    builder.append("at ");
-                    builder.append(element.getClassName() + ".");
-                    builder.append(element.getMethodName());
-                    builder.append("(");
-                    builder.append(element.getFileName());
-                    builder.append(":");
-                    builder.append(element.getLineNumber());
-                    builder.append(")");
-                    builder.append("\r\n");
-                }
-            }
+            builder.append(crashLog);
         }
         return builder.toString();
     }
