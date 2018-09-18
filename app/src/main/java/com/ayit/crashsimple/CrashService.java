@@ -15,13 +15,13 @@ public class CrashService extends CrashBaseService {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG,"CrashService onCreate");
+//        Log.d(TAG,"CrashService onCreate");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG,"CrashService onDestroy");
+//        Log.d(TAG,"CrashService onDestroy");
     }
 
     @Override
